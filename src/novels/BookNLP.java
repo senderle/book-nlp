@@ -94,6 +94,7 @@ public class BookNLP {
 		options.addOption("p", true, "output directory");
 		options.addOption("id", true, "book ID");
 		options.addOption("d", false, "dump pronoun and quotes for annotation");
+        options.addOption("q", false, "include quotation attributions in token file");
 
 		CommandLine cmd = null;
 		try {
@@ -185,7 +186,12 @@ public class BookNLP {
 		}
 
 		// Print out tokens
-		PrintUtil.printTokens(book, tokenFileString);
+        if (cmd.hasOption("q")) {
+            PrintUtil.printTokensWithQuoteAttribution(book, tokenFileString);
+        } else {
+		    PrintUtil.printTokens(book, tokenFileString);
+        }
+
 
 	}
 }

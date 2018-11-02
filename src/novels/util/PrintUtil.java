@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ListIterator;
 
 import novels.Book;
 import novels.BookCharacter;
@@ -57,7 +58,75 @@ public class PrintUtil {
 			e.printStackTrace();
 		}
 	}
-	
+
+    public static String joinNerTokens(ArrayList<Token> tokens, int tokenId) {
+        StringBuilder joined = new StringBuilder();
+        String ner = tokens.get(tokenId).ner;
+        int start = tokenId;
+        int end = tokenId;
+        while (ner.equals(tokens.get(start - 1).ner)) {
+            start -= 1;
+        }
+        while (ner.equals(tokens.get(end).ner)) {
+            end += 1;
+        }
+        for (int i = start; i < end - 1; i++) {
+            joined.append(tokens.get(i).word);
+            joined.append(" ");
+        }
+        joined.append(tokens.get(end - 1).word);
+        return joined.toString();
+    }
+
+    public static void printTokensWithQuoteAttribution(Book book, String outFile) {
+		OutputStreamWriter out = null;
+		
+		try {
+			out = new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8");
+			out.write(Token.ORDER);
+            out.write("\t" + "attributionName");
+            out.write("\t" + "characterName");
+            out.write("\t" + "entityName");
+            out.write("\n");
+
+            ListIterator<Quotation> quotationIter = book.quotations.listIterator();
+            Quotation currentQuotation = quotationIter.hasNext() ? quotationIter.next() : null;
+			for (Token anno : book.tokens) {
+                String attributionName = "";
+                String characterName = "";
+                String entityName = "";
+				if (book.tokenToCharacter.containsKey(anno.tokenId)) {
+					anno.characterId = book.tokenToCharacter.get(anno.tokenId).getCharacterId();
+                    Antecedent ant = book.animateEntities.get(anno.tokenId);
+                    characterName = ant.getString(book);
+				}
+                if (anno.ner.equals("ORGANIZATION") || anno.ner.equals("LOCATION")) {
+                    entityName = joinNerTokens(book.tokens, anno.tokenId);
+                }
+                while (currentQuotation != null 
+                        && anno.tokenId > currentQuotation.end) {
+                    currentQuotation = quotationIter.hasNext() ? quotationIter.next() : null;
+                }
+                if (anno.quotation) {
+                    if (currentQuotation == null) {
+                        throw new RuntimeException("quotations and tokens are out of alignment");
+                    } else if (currentQuotation.attributionId != 0) {
+						Antecedent ant = book.animateEntities.get(currentQuotation.attributionId);
+						attributionName = ant.getString(book);
+                    }
+                }
+				out.write(anno.toString());
+                out.write("\t" + attributionName);
+                out.write("\t" + characterName);
+                out.write("\t" + entityName);
+                out.write("\n");
+			}
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+
 	public static void printBookJson(Book book, File outFile) {
 		OutputStreamWriter out = null;
 		try {
