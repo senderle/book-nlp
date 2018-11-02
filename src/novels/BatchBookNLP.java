@@ -13,7 +13,6 @@ import novels.annotators.CharacterFeatureAnnotator;
 import novels.annotators.CoreferenceAnnotator;
 import novels.annotators.PhraseAnnotator;
 import novels.annotators.QuotationAnnotator;
-import novels.annotators.SupersenseAnnotator;
 import novels.annotators.SyntaxAnnotator;
 import novels.util.PrintUtil;
 import novels.util.Util;
@@ -142,12 +141,8 @@ public class BatchBookNLP {
 					bookNLP = new BatchBookNLP();
 					syntaxAnnotator = new SyntaxAnnotator();
 				}
-
 				tokens = syntaxAnnotator.process(text);
-				
-				SupersenseAnnotator supersenseAnnotator=new SupersenseAnnotator();
-				supersenseAnnotator.process(tokens);
-				
+				System.out.println("Processing text");
 				Book book = new Book(tokens);
 
 				bookNLP.weights = BatchBookNLP.corefWeights;
