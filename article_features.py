@@ -2,6 +2,7 @@ import os
 import sys
 import shlex
 import csv
+import argparse
 
 from subprocess import run
 from collections import defaultdict, Counter
@@ -102,11 +103,30 @@ def aggregate_tokens(tokens):
             tix = tix + 1
     return features
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Feature extraction for multiple documents using BookNLP'
+    )
+    parser.add_argument(
+        'metadata-filename',
+        help='A file containing metadata, one row per file.'
+    )
+    parser.add_argument(
+        'data-folder',
+        help='A folder contianing text files corresponding to the metadata.'
+    )
+    parser.add_argument(
+        'output-file',
+        help='The feature output file.'
+    )
+    return parser.parse_args()
+
 
 if __name__ == '__main__':
-    metadata_filename = sys.argv[1]
-    data_folder = sys.argv[2]
-    output_file = sys.argv[3]
+    args = parse_args()
+    metadata_filename = args.metadata_filename
+    data_folder = args.data_folder
+    output_file = args.output_file
     input_file, _ext = os.path.splitext(metadata_filename)
     input_file += '-concat.txt'
 
